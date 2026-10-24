@@ -2,7 +2,9 @@
 
 Assistente pessoal que conversa pelo Telegram (texto e áudio) e ajuda no dia a dia com **lembretes, agenda, compromissos e estoque de itens de uso contínuo**. Uso inicial: duas pessoas (Adrian e a namorada), cada uma com seus próprios dados.
 
-> Status: **planejamento concluído, construção não iniciada.** Este README guarda o contexto completo das decisões tomadas na sessão de planejamento (24/10/2026). Nada foi criado ainda no n8n, no banco ou no Telegram.
+> Status (24/10/2026): **v1 construída e em teste.** Este README guarda o contexto das decisões de planejamento. A construção está em `db/` (schema e funções SQL) e `scripts/` (wizard de configuração); os workflows ficam no n8n: `Agente | Telegram`, `Agente | Disparador`, `Agente | Agenda Adrian` e `Agente | Agenda Maria Clara`. Política de privacidade: [PRIVACY.md](PRIVACY.md).
+>
+> Para refazer a instalação: aplique `db/001` a `db/004` no Postgres do agente, crie as credenciais no n8n com `scripts/setup-wizard.sh` e importe os workflows. Nenhum segredo fica neste repositório.
 
 ## Stack
 
