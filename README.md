@@ -2,9 +2,9 @@
 
 Assistente pessoal que conversa pelo Telegram (texto e áudio) e ajuda no dia a dia com **lembretes, agenda, compromissos e estoque de itens de uso contínuo**. Uso inicial: duas pessoas (Adrian e a namorada), cada uma com seus próprios dados.
 
-> Status (24/10/2026): **v1 construída e em teste.** Este README guarda o contexto das decisões de planejamento. A construção está em `db/` (schema e funções SQL) e `scripts/` (wizard de configuração); os workflows ficam no n8n: `Agente | Telegram`, `Agente | Disparador`, `Agente | Agenda Adrian` e `Agente | Agenda Maria Clara`. Política de privacidade: [PRIVACY.md](PRIVACY.md).
+> Status (25/10/2026): **v1 construída; IA trocada para a OpenAI e módulo de finanças adicionado.** Este README guarda o contexto das decisões de planejamento. A construção está em `db/` (schema e funções SQL) e `scripts/` (wizard de configuração); os workflows ficam no n8n: `Agente | Telegram`, `Agente | Disparador`, `Agente | Agenda Adrian` e `Agente | Agenda Maria Clara`. Política de privacidade: [PRIVACY.md](PRIVACY.md).
 >
-> Para refazer a instalação: aplique `db/001` a `db/006` no Postgres do agente, crie as credenciais no n8n com `scripts/setup-wizard.sh` e importe os workflows. Nenhum segredo fica neste repositório.
+> Para refazer a instalação: aplique `db/001` a `db/009` no Postgres do agente, crie as credenciais no n8n com `scripts/setup-wizard.sh` e importe os workflows. Nenhum segredo fica neste repositório.
 
 ## Stack
 
@@ -14,14 +14,14 @@ Assistente pessoal que conversa pelo Telegram (texto e áudio) e ajuda no dia a 
 | Orquestração | n8n já instalado no Easypanel da VPS |
 | Banco | Postgres da VPS, schema e usuário próprios do agente |
 | Cache / estado | Redis (estado de conversa, deduplicação, cache curto da agenda) |
-| LLM | Gemini Flash (credencial "API GEMINI" já existente no n8n), saída JSON estruturada, temperatura baixa |
+| LLM | OpenAI (nó nativo do n8n, credencial "OpenAI account"): `gpt-6-luna` para interpretar texto e foto com JSON de schema estrito e `GPT` de transcrição para áudio. O modelo vem da chave Redis `agente:cfg:model`, então dá para trocar sem republicar (`set agente:cfg:model gpt-6.1-sol`) |
 | Agenda | Google Calendar (fonte da verdade dos compromissos) |
 | HTTPS | Fornecido pelo Easypanel (necessário para o webhook do Telegram) |
 
 ## Princípios
 
 - **Tom e idioma:** português do Brasil, fuso `America/Sao_Paulo`. Horários gravados em UTC no banco e convertidos na exibição.
-- **O modelo só interpreta.** O Gemini extrai intenção e campos em JSON. Quem executa (banco, Calendar, Telegram) são nós do n8n.
+- **O modelo só interpreta.** A IA (OpenAI) extrai intenção e campos em JSON de schema estrito. Quem executa (banco, Calendar, Telegram) são nós do n8n.
 - **Nunca assumir horário.** Se o pedido não traz horário, o agente pergunta.
 - **Autonomia controlada:** criar e consultar rodam direto, com aviso do que foi feito. Alterar e apagar sempre pedem confirmação. Mensagem para terceiros nunca sai sem confirmação explícita.
 
@@ -49,7 +49,7 @@ Existe também o conceito de **item compartilhado** ("lembra nós dois de..."), 
 
 ### Estoque de itens (vitamina D)
 
-Dito em linguagem natural: *"tomo vitamina D todo dia, 1 por dia, a cartela tem 30, me avise quando estiver acabando"*. O Gemini extrai `item`, `quantidade`, `consumo_por_dia`, `data_de_inicio` e `avisar_com_X_dias`, e pergunta só o que faltar.
+Dito em linguagem natural: *"tomo vitamina D todo dia, 1 por dia, a cartela tem 30, me avise quando estiver acabando"*. A IA extrai `item`, `quantidade`, `consumo_por_dia`, `data_de_inicio` e `avisar_com_X_dias`, e pergunta só o que faltar.
 
 - Não há lembrete diário recorrente. O restante é **calculado**: `restante = quantidade − dias_desde_o_inicio × consumo`.
 - O n8n agenda **um único aviso**, para a data em que faltarem 5 dias (padrão, alterável por item e no `/config`).
@@ -64,21 +64,38 @@ Dito em linguagem natural: *"tomo vitamina D todo dia, 1 por dia, a cartela tem 
 3. Escolher o horário do resumo da manhã (padrão 7h30).
 4. Conectar o Google Calendar (ou pular e conectar depois).
 5. Mini tutorial com cinco exemplos prontos: lembrete por áudio, compromisso, "o que tenho hoje", antecedência de aviso e **estoque de itens**.
-6. Aviso de privacidade: os dados passam pelo Gemini.
+6. Aviso de privacidade: os dados passam pela OpenAI.
 
 ## Arquitetura
 
-- **Workflow principal** em fluxo fixo: Telegram → Gemini (JSON) → Switch por intenção → ação.
+- **Workflow principal** em fluxo fixo: Telegram → (áudio: transcrição) → OpenAI (JSON) → Switch por intenção → ação.
 - **Dois sub-workflows pequenos**, "Agenda Adrian" e "Agenda Namorada", contendo apenas os nós do Google Calendar, cada um com sua credencial. O principal chama o certo pelo `user_id`.
 - **Ramo "outros pedidos"** já previsto no Switch. Na v1 responde "ainda não sei fazer isso". Na v2 aponta para um sub-workflow com AI Agent.
 - **Redis** (a revisar após testes): estado da conversa (ex.: aguardando o horário de um lembrete), deduplicação de mensagens do Telegram e cache de 10 minutos da agenda do dia, invalidado a cada escrita do agente. O resumo da semana consulta o Calendar na hora, sem cache longo, para não mostrar agenda desatualizada.
 - **Banco** (schema próprio): `users`, `reminders`, avisos antecipados, `supplies` (estoque) e `events_cache`, todas com `user_id`.
 - **Operação:** `pg_dump` diário do schema (retenção de 7 dias) e workflow de erro do n8n avisando por Telegram.
 
+## Finanças (v1.1)
+
+Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em linguagem natural, por texto, áudio ou foto de recibo; a lógica vive no Postgres (`db/008_financas.sql`, função `agente.f_fin`).
+
+- **Lançamentos:** gasto ou receita, com forma de pagamento (pix, débito, crédito, dinheiro, boleto). Texto e áudio claros gravam direto com botão **Desfazer**; foto de recibo mostra o que leu e pede **Confirmar**. Nunca grava valor que a IA não leu com certeza.
+- **Categorias:** padrão (Alimentação, Mercado, Transporte, Moradia, Saúde, Lazer, Educação, Assinaturas, Compras, Outros; receitas: Recebimentos, Salário) mais as que a pessoa cria, com palavras-chave. A categoria vem do que a pessoa disse, do histórico da mesma descrição, do palpite da IA ou das palavras-chave.
+- **Contas a pagar e recorrentes:** "aluguel 1500 todo dia 5" cria uma conta pendente e um lembrete no dia (Feito dá baixa); "já paguei" também. Parcelas ("tênis 600 em 3x") entram mês a mês.
+- **Orçamento por categoria** com aviso a 80% e a 100%, sugestão pela média dos 2 meses anteriores, e **dia de fechamento** do mês financeiro (padrão 5, mudável).
+- **Consultas:** resumo do mês, comparação com o mês anterior, maiores despesas, gastos por dia, "quem me deve".
+- **Fora desta versão:** importação de extrato, Open Finance, relatórios em PDF/Excel, fatura e limite de cartão.
+
+## Resumos (v1.2)
+
+- **Manhã** (horário da pessoa, padrão 07:30): Compromissos, Tarefas e Lembretes sempre aparecem (com "nenhum" quando vazios). Contas a pagar (atrasadas, de hoje e dos próximos 7 dias), Dinheiro (gasto de ontem e categorias a 80% ou mais do orçamento) e Hora de comprar só aparecem se houver algo.
+- **Fim do dia** (20:00 por padrão, `users.evening_enabled` liga e desliga): pendências de hoje (tarefas, lembretes, contas) ou "tudo em dia", e o que vem amanhã.
+- Dados em `agente.f_summary_data`; quem recebe, em `agente.f_summary_candidates`; texto montado no workflow `Agente | Disparador`.
+
 ## Privacidade
 
-- Agenda e dados de saúde (remédios) passam pelo Gemini. Adrian aceitou o uso, inclusive no plano gratuito. A namorada decide no onboarding.
-- Áudios são baixados, enviados ao Gemini e apagados. Só o texto e a intenção ficam no banco.
+- Agenda e dados de saúde (remédios) passam pela OpenAI, com armazenamento de respostas desativado. Os dois usuários estão cientes.
+- Áudios são baixados, enviados à OpenAI para transcrição e apagados. Só o texto e a intenção ficam no banco.
 
 ## v2 (fora do MVP)
 
@@ -96,7 +113,6 @@ Dito em linguagem natural: *"tomo vitamina D todo dia, 1 por dia, a cartela tem 
 ## Pendências a verificar (fatos, não decisões)
 
 - Qual dos dois Postgres é o da VPS e qual é o Supabase.
-- Qual plano a chave Gemini usa.
 - Se já existe Redis no Easypanel.
 - Se o app OAuth do Google está em modo de teste (nesse caso o e-mail da namorada precisa entrar como usuário de teste).
 
@@ -104,6 +120,6 @@ Dito em linguagem natural: *"tomo vitamina D todo dia, 1 por dia, a cartela tem 
 
 1. Confirmar o entendimento e montar o plano de construção em fases.
 2. Modelo de dados detalhado.
-3. Prompt e schema JSON do Gemini.
+3. Prompt e schema JSON da IA.
 4. Testes de aceitação.
 5. Construção no n8n, por fases, testando junto.
