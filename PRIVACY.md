@@ -1,6 +1,6 @@
 # Política de Privacidade — Agente Pessoal (MeuAssessor)
 
-Última atualização: 25/10/2026
+Última atualização: 26/10/2026
 
 O **Agente Pessoal** (identificado no Google como *MeuAssessor*) é um assistente de uso particular, criado e operado por Adrian Alencar, usado por um grupo restrito de pessoas autorizadas (duas, no momento). Ele não é um serviço aberto ao público, e não há cadastro de terceiros.
 
@@ -11,9 +11,11 @@ Página inicial do projeto: https://github.com/adrianlnrc/agente-telegram
 - **Mensagens, áudios e fotos do Telegram** enviados ao assistente. Os áudios e as fotos são baixados, enviados para transcrição e interpretação e **apagados em seguida**; só o texto interpretado e a ação resultante são guardados.
 - **Lembretes, avisos e itens de estoque** que a pessoa pede ao assistente (por exemplo, título, data e hora, antecedência do aviso).
 - **Dados financeiros** que a pessoa registra: gastos, receitas, contas a pagar, parcelas, gastos fixos, categorias, orçamentos e valores que outras pessoas devem. Cada pessoa tem as suas finanças em separado; o assistente não mostra os dados de uma pessoa para a outra.
+- **Contatos e grupos** que a pessoa salva (nome e e-mail de quem ela quer convidar). O assistente só usa esses e-mails para convites que a pessoa **confirmou**, e nunca inventa um e-mail. Cartões (nome, dia de fechamento e vencimento, limite) e metas de economia ficam junto das finanças da própria pessoa.
+- **Convites do Google Calendar recebidos** pela pessoa: o assistente lê o título, o horário e o organizador para avisar e, se a pessoa tocar em Aceitar ou Recusar, responde ao convite em nome dela.
 - **Preferências** da pessoa (como o horário do resumo diário e o dia de fechamento do mês financeiro).
 - **Tarefas do Google Tasks**, quando a pessoa autoriza a conexão: o assistente cria, lista e conclui tarefas pedidas.
-- **Dados do Google Calendar**, quando a pessoa autoriza a conexão: o assistente **lê** os eventos do dia ou do período pedido e **cria** eventos que a pessoa solicitou. Ele não apaga nem altera eventos existentes e não compartilha a agenda com terceiros.
+- **Dados do Google Calendar**, quando a pessoa autoriza a conexão: o assistente **lê** os eventos do dia ou do período pedido e **cria** eventos que a pessoa solicitou. Ele **muda, cancela e responde a convites** apenas depois que a pessoa confirma por botão, e só envia convites a terceiros quando a pessoa confirma a lista de convidados. Não compartilha a agenda com terceiros.
 
 ## Como os dados são usados
 

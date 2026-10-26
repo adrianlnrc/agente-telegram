@@ -2,9 +2,9 @@
 
 Assistente pessoal que conversa pelo Telegram (texto e áudio) e ajuda no dia a dia com **lembretes, agenda, compromissos e estoque de itens de uso contínuo**. Uso inicial: duas pessoas (Adrian e a namorada), cada uma com seus próprios dados.
 
-> Status (25/10/2026): **v1 construída; IA trocada para a OpenAI e módulo de finanças adicionado.** Este README guarda o contexto das decisões de planejamento. A construção está em `db/` (schema e funções SQL) e `scripts/` (wizard de configuração); os workflows ficam no n8n: `Agente | Telegram`, `Agente | Disparador`, `Agente | Agenda Adrian` e `Agente | Agenda Maria Clara`. Política de privacidade: [PRIVACY.md](PRIVACY.md).
+> Status (26/10/2026): **fases 2 e 3 construídas** (finanças completas com planejamento e cartões, resumos, gestão de agenda, lembretes recorrentes, contatos e convites com Meet). IA em OpenAI. Este README guarda o contexto das decisões de planejamento. A construção está em `db/` (schema e funções SQL) e `scripts/` (wizard de configuração); os workflows ficam no n8n: `Agente | Telegram`, `Agente | Disparador`, `Agente | Agenda Adrian` e `Agente | Agenda Maria Clara`. Política de privacidade: [PRIVACY.md](PRIVACY.md).
 >
-> Para refazer a instalação: aplique `db/001` a `db/009` no Postgres do agente, crie as credenciais no n8n com `scripts/setup-wizard.sh` e importe os workflows. Nenhum segredo fica neste repositório.
+> Para refazer a instalação: aplique `db/001` a `db/014` no Postgres do agente, crie as credenciais no n8n com `scripts/setup-wizard.sh` e importe os workflows. Nenhum segredo fica neste repositório.
 
 ## Stack
 
@@ -84,7 +84,31 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 - **Contas a pagar e recorrentes:** "aluguel 1500 todo dia 5" cria uma conta pendente e um lembrete no dia (Feito dá baixa); "já paguei" também. Parcelas ("tênis 600 em 3x") entram mês a mês.
 - **Orçamento por categoria** com aviso a 80% e a 100%, sugestão pela média dos 2 meses anteriores, e **dia de fechamento** do mês financeiro (padrão 5, mudável).
 - **Consultas:** resumo do mês, comparação com o mês anterior, maiores despesas, gastos por dia, "quem me deve".
-- **Fora desta versão:** importação de extrato, Open Finance, relatórios em PDF/Excel, fatura e limite de cartão.
+- **Fora desta versão:** importação de extrato, Open Finance, relatórios em PDF/Excel.
+
+## Planejamento financeiro (fase 2)
+
+`db/011_planejamento.sql`. Tudo editável por frase.
+
+- **Limite geral do mês** ("quero gastar no máximo 3000"): conta só gastos pagos, avisa a 80% e a 100% (junto com o aviso da categoria), mostra quanto ainda pode gastar por dia. "Muda para 3500", "tira o limite".
+- **Metas de economia** ("juntar 800 até dezembro pro presente"): progresso automático (receitas pagas menos gastos desde a criação, dividido entre as metas automáticas) mais registro manual ("guardei 100", "tirei 50"). "Essa meta é só manual" liga o modo manual. Apagar pede confirmação.
+- **Meu planejamento**: renda (prevista com "minha renda é 5000" ou as receitas recebidas) menos gasto, menos já comprometido (contas a pagar e parcelas), menos o que as metas pedem no mês.
+- **Preferências por frase**: apelido, parar de usar emoji, fuso horário, ligar e desligar os resumos da manhã e do fim do dia, horário do resumo, expediente.
+- **Cartões e faturas** (`db/013_extras.sql`): nome, fechamento, vencimento e limite; lançamento "no cartão do Itaú"; fatura aberta e fechada, limite disponível; aviso antes do vencimento. Consultas por categoria e mês, por forma de pagamento, "quanto sobrou para fechar o mês" e "quanto já comprometi de novembro".
+
+## Agenda (fase 2, `db/012_agenda.sql`)
+
+- Mover e cancelar compromissos com **Confirmar**; vários candidatos viram até 3 botões numerados; evento com convidados avisa o Google só após a confirmação; evento recorrente pergunta "só este" ou "a série".
+- **Conflito de horário** ao criar ou mover, com "Marcar mesmo assim" e "Outro horário".
+- **Horário livre** dentro do expediente (08:00 a 19:00, blocos de 30 min ou mais).
+- **Compromissos recorrentes** (diário, semanal, mensal). O aviso "me lembre antes" cobre a próxima ocorrência. Um lembrete pode ser **ligado ao compromisso e à pessoa** ("levar uma calça pra Maria Luísa na celebração").
+- **Convites recebidos**: o bot avisa e oferece Aceitar ou Recusar (verificado com um convite real).
+- Transformar um lembrete em compromisso; link da agenda.
+- **Lembrete recorrente genérico** (todo dia, toda sexta, todo dia 5) e "para de me lembrar".
+
+## Contatos, grupos e convites (fase 3, `db/014_contatos_convites.sql`)
+
+"Salva o e-mail da Cláudia", grupos ("cria o grupo time com Douglas e Bia"), "chama o Douglas e a Bia pra sexta 16h" e "marca 30 min com a contadora e manda o link". O bot **sempre confirma** antes de mandar convite e nunca inventa e-mail: nome sem cadastro vira um pedido do e-mail.
 
 ## Resumos (v1.2)
 
@@ -100,9 +124,8 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 ## v2 (fora do MVP)
 
 - **AI Agent** para pedidos abertos, como busca de **passagens aéreas** (fonte de dados a definir) e **"restaurantes mexicanos perto de mim"** via Google Places API: três melhores, ordenados por avaliação, distância e preferência, com links (formato a validar juntos). A localização vem do Telegram (botão de anexo) ou de um endereço salvo, sempre confirmando onde a pessoa está.
-- Alterar e apagar compromissos pelo bot.
-- Recorrência geral e tarefas.
-- Foto/print (ex.: convite recebido).
+- Fase 4: documentos (guardar o arquivo do Telegram com descrição, pastas e lembrete de vencimento), listas, projetos e notas.
+- Fase 5: pesquisa com fonte e limite diário de uso.
 
 ## Estado do ambiente (verificado em 24/10/2026)
 
