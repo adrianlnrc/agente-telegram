@@ -1,6 +1,6 @@
 # Política de Privacidade — Agente Pessoal (MeuAssessor)
 
-Última atualização: 26/10/2026
+Última atualização: 28/10/2026
 
 O **Agente Pessoal** (identificado no Google como *MeuAssessor*) é um assistente de uso particular, criado e operado por Adrian Alencar, usado por um grupo restrito de pessoas autorizadas (duas, no momento). Ele não é um serviço aberto ao público, e não há cadastro de terceiros.
 
@@ -13,6 +13,8 @@ Página inicial do projeto: https://github.com/adrianlnrc/agente-telegram
 - **Dados financeiros** que a pessoa registra: gastos, receitas, contas a pagar, parcelas, gastos fixos, categorias, orçamentos e valores que outras pessoas devem. Cada pessoa tem as suas finanças em separado; o assistente não mostra os dados de uma pessoa para a outra.
 - **Contatos e grupos** que a pessoa salva (nome e e-mail de quem ela quer convidar). O assistente só usa esses e-mails para convites que a pessoa **confirmou**, e nunca inventa um e-mail. Cartões (nome, dia de fechamento e vencimento, limite) e metas de economia ficam junto das finanças da própria pessoa.
 - **Convites do Google Calendar recebidos** pela pessoa: o assistente lê o título, o horário e o organizador para avisar e, se a pessoa tocar em Aceitar ou Recusar, responde ao convite em nome dela.
+- **Documentos** que a pessoa manda para guardar (fotos, PDFs, vídeos e outros arquivos): o assistente guarda apenas o identificador do arquivo no Telegram e dados de organização (título, pasta, data de vencimento); **o conteúdo do arquivo continua no Telegram** e não é copiado para o servidor. O conteúdo só passa pela OpenAI quando for foto ou PDF enviado para interpretação (como recibos).
+- **Listas, notas e projetos** (itens, textos livres, tarefas e prazos) que a pessoa pede para guardar, em texto, no banco, separados por pessoa.
 - **Preferências** da pessoa (como o horário do resumo diário e o dia de fechamento do mês financeiro).
 - **Tarefas do Google Tasks**, quando a pessoa autoriza a conexão: o assistente cria, lista e conclui tarefas pedidas.
 - **Dados do Google Calendar**, quando a pessoa autoriza a conexão: o assistente **lê** os eventos do dia ou do período pedido e **cria** eventos que a pessoa solicitou. Ele **muda, cancela e responde a convites** apenas depois que a pessoa confirma por botão, e só envia convites a terceiros quando a pessoa confirma a lista de convidados. Não compartilha a agenda com terceiros.

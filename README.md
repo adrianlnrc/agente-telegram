@@ -110,6 +110,16 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 
 "Salva o e-mail da Cláudia", grupos ("cria o grupo time com Douglas e Bia"), "chama o Douglas e a Bia pra sexta 16h" e "marca 30 min com a contadora e manda o link". O bot **sempre confirma** antes de mandar convite e nunca inventa e-mail: nome sem cadastro vira um pedido do e-mail.
 
+## Documentos, listas, notas e projetos (fase 4, `db/015` a `db/018`)
+
+- **Documentos** (`015_documentos.sql`): foto, PDF, vídeo ou qualquer arquivo até 50 MB. O banco guarda só o `file_id` do Telegram e metadados (título, pasta, tipo, tamanho, vencimento), nunca o conteúdo. "Guarda essa aqui na pasta Casa", "acha a apólice", "me manda tudo da reforma" (reenvia pelo `file_id`), "me avisa antes do alvará vencer" (lembrete de vencimento). Apagar pede confirmação por botão.
+- **Listas e notas** (`016_listas_notas.sql`): "lista de mercado: arroz, café", "marca o arroz", "limpa a lista", "anota a ideia da assinatura anual", "o que eu tinha anotado sobre a expansão?". Apagar lista ou nota pede confirmação.
+- **Projetos** (`017_projetos.sql`): projeto com prazo, tarefas, urgente, concluir e atrasadas. Uma tarefa entra direto; várias, ou "quebra o projeto em tarefas", pedem confirmação por botão.
+- **Resumos** (`018_resumo_fase4.sql`): `f_summary_data` passa a devolver `extras_text` com tarefas de projeto atrasadas, projetos com prazo nos próximos 7 dias e faturas de cartão a vencer; o texto entra no fim do resumo da manhã e do fim do dia.
+- Roteamento de botões em `agente.f_callback` (prefixos `ag`, `ct`, `ex`, `dc`, `ls`, `pj`).
+- As regras estáticas do prompt ficam no Redis (chave `agente:cfg:rules`), lidas pelo nó `Ler regras`; sem a chave o bot fica degradado.
+- Limite conhecido: "anota: ligar pro eletricista" vira tarefa do Google Tasks (é um afazer); para guardar um texto livre, peça "anota a ideia..." ou "guarda uma nota".
+
 ## Resumos (v1.2)
 
 - **Manhã** (horário da pessoa, padrão 07:30): Compromissos, Tarefas e Lembretes sempre aparecem (com "nenhum" quando vazios). Contas a pagar (atrasadas, de hoje e dos próximos 7 dias), Dinheiro (gasto de ontem e categorias a 80% ou mais do orçamento) e Hora de comprar só aparecem se houver algo.
@@ -124,7 +134,6 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 ## v2 (fora do MVP)
 
 - **AI Agent** para pedidos abertos, como busca de **passagens aéreas** (fonte de dados a definir) e **"restaurantes mexicanos perto de mim"** via Google Places API: três melhores, ordenados por avaliação, distância e preferência, com links (formato a validar juntos). A localização vem do Telegram (botão de anexo) ou de um endereço salvo, sempre confirmando onde a pessoa está.
-- Fase 4: documentos (guardar o arquivo do Telegram com descrição, pastas e lembrete de vencimento), listas, projetos e notas.
 - Fase 5: pesquisa com fonte e limite diário de uso.
 
 ## Estado do ambiente (verificado em 24/10/2026)
