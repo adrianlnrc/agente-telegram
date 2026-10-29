@@ -118,6 +118,8 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 - **Resumos** (`018_resumo_fase4.sql`): `f_summary_data` passa a devolver `extras_text` com tarefas de projeto atrasadas, projetos com prazo nos próximos 7 dias e faturas de cartão a vencer; o texto entra no fim do resumo da manhã e do fim do dia.
 - Roteamento de botões em `agente.f_callback` (prefixos `ag`, `ct`, `ex`, `dc`, `ls`, `pj`).
 - As regras estáticas do prompt ficam no Redis (chave `agente:cfg:rules`), lidas pelo nó `Ler regras`; sem a chave o bot fica degradado.
+- **Locais salvos e compromisso com o grupo** (`021_locais_comandos.sql`): "o local igreja é Rua das Flores, 120" guarda o endereço (tabela `places`). Ao dizer "festa da igreja na sexta com a família", o bot usa o endereço salvo, resolve o grupo `família` (membros e e-mails), pergunta só a hora e mostra "Marcar … em <endereço> e enviar convite para Ana, Bia (grupo Família)?" com botões; o convite só sai depois de confirmar. Local não salvo vira o texto dito; grupo inexistente gera orientação para criá-lo.
+- **Comandos**: `/start` e `/ajuda` com os exemplos novos, `/config` completo (nome, resumos da manhã e do fim do dia, avisos, fechamento, fuso, emojis, Google conectado e contagens) e `/contatos` (contatos, grupos com membros e locais). Dados em `agente.f_command_data`, lidos pelo nó `Comando: dados`.
 - Limite conhecido: "anota: ligar pro eletricista" vira tarefa do Google Tasks (é um afazer); para guardar um texto livre, peça "anota a ideia..." ou "guarda uma nota".
 
 ## Resumos (v1.2)
