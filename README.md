@@ -114,7 +114,7 @@ Cada pessoa tem as próprias finanças (nada é compartilhado). Tudo é dito em 
 
 - **Documentos** (`015_documentos.sql`): foto, PDF, vídeo ou qualquer arquivo até 50 MB. O banco guarda só o `file_id` do Telegram e metadados (título, pasta, tipo, tamanho, vencimento), nunca o conteúdo. "Guarda essa aqui na pasta Casa", "acha a apólice", "me manda tudo da reforma" (reenvia pelo `file_id`), "me avisa antes do alvará vencer" (lembrete de vencimento). Apagar pede confirmação por botão.
 - **Listas e notas** (`016_listas_notas.sql`): "lista de mercado: arroz, café", "marca o arroz", "limpa a lista", "anota a ideia da assinatura anual", "o que eu tinha anotado sobre a expansão?". Apagar lista ou nota pede confirmação.
-- **Projetos** (`017_projetos.sql`): projeto com prazo, tarefas, urgente, concluir e atrasadas. Uma tarefa entra direto; várias, ou "quebra o projeto em tarefas", pedem confirmação por botão.
+- **Projetos** (`017_projetos.sql`): projeto com prazo, tarefas, urgente, concluir e atrasadas. Tarefas que a pessoa lista entram direto (`db/019_projetos_direto.sql`); só as tarefas sugeridas pela IA ("quebra o projeto em tarefas") pedem confirmação por botão.
 - **Resumos** (`018_resumo_fase4.sql`): `f_summary_data` passa a devolver `extras_text` com tarefas de projeto atrasadas, projetos com prazo nos próximos 7 dias e faturas de cartão a vencer; o texto entra no fim do resumo da manhã e do fim do dia.
 - Roteamento de botões em `agente.f_callback` (prefixos `ag`, `ct`, `ex`, `dc`, `ls`, `pj`).
 - As regras estáticas do prompt ficam no Redis (chave `agente:cfg:rules`), lidas pelo nó `Ler regras`; sem a chave o bot fica degradado.
